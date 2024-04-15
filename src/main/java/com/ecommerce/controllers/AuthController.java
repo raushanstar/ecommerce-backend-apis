@@ -10,8 +10,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ecommerce.exceptions.UserAlreadyExistsException;
 import com.ecommerce.model.LocalUser;
+import com.ecommerce.payloads.LoginBody;
+import com.ecommerce.payloads.LoginResponse;
 import com.ecommerce.payloads.RegistrationBody;
+import com.ecommerce.security.JWTService;
 import com.ecommerce.services.UserService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/auth")
@@ -19,6 +24,8 @@ public class AuthController {
 
 	@Autowired
 	private UserService userService;
+	@Autowired
+	  private JWTService jwtService;
 
 	@PostMapping("/register")
 	public ResponseEntity<String> registration(@RequestBody RegistrationBody registrationBody) {
@@ -29,4 +36,19 @@ public class AuthController {
 			return new ResponseEntity<>("User Already registered", HttpStatus.CONFLICT);
 		}
 	}
+	
+	@PostMapping("/login")
+	  public ResponseEntity<LoginResponse> loginUser(@Valid @RequestBody LoginBody loginBody) {
+	    String jwt = userService.loginUser(loginBody);
+	    if (jwt == null) {
+	      return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+	    } else {
+	      LoginResponse response = new LoginResponse();
+	      response.setJwt(jwt);
+	      return ResponseEntity.ok(response);
+	    }
+	  }
+
+	
+
 }
